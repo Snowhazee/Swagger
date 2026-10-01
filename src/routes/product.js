@@ -117,6 +117,28 @@ router.route('/')
  *         $ref: '#/components/responses/BadRequest'
  *       404:
  *         $ref: '#/components/responses/NotFound'
+ *   patch:
+ *     summary: แก้ไขข้อมูลสินค้าบางส่วน
+ *     tags: [Products]
+ *     parameters:
+ *       - $ref: '#/components/parameters/ProductId'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProductPatch'
+ *     responses:
+ *       200:
+ *         description: แก้ไขสินค้าสำเร็จ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  *   delete:
  *     summary: ลบสินค้า
  *     tags: [Products]
@@ -154,6 +176,37 @@ router.route('/:id')
       delete product.category;
     } else {
       product.category = req.body.category;
+    }
+
+    res.json(product);
+  })
+  .patch((req, res) => {
+    const product = products.find((item) => item.id === Number(req.params.id));
+    if (!product) {
+      return res.status(404).json({ error: 'ไม่พบสินค้า' });
+    }
+
+    const patch = req.body;
+    const allowedFields = ['name', 'price', 'stock', 'category'];
+    if (
+      !patch ||
+      typeof patch !== 'object' ||
+      Array.isArray(patch) ||
+      Object.keys(patch).length === 0 ||
+      Object.keys(patch).some((field) => !allowedFields.includes(field))
+    ) {
+      return res.status(400).json({ error: 'กรุณาระบุข้อมูลสินค้าที่ต้องการแก้ไข' });
+    }
+
+    const validationError = validateProduct({ ...product, ...patch });
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
+
+    for (const field of allowedFields) {
+      if (Object.hasOwn(patch, field)) {
+        product[field] = field === 'name' ? patch[field].trim() : patch[field];
+      }
     }
 
     res.json(product);

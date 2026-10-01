@@ -27,6 +27,20 @@ module.exports = swaggerJsdoc({
             },
           },
         },
+        ProductPatch: {
+          type: 'object',
+          minProperties: 1,
+          properties: {
+            name: { type: 'string', minLength: 1, example: 'คีย์บอร์ดไร้สาย' },
+            price: { type: 'number', minimum: 0, example: 1390 },
+            stock: { type: 'integer', minimum: 0, example: 30 },
+            category: {
+              type: 'string',
+              enum: ['electronics', 'books', 'fashion'],
+              example: 'electronics',
+            },
+          },
+        },
         Product: {
           allOf: [
             {
